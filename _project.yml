@@ -1,0 +1,5 @@
+directories:
+  dir_archive: _archive
+  dir_cache: _tmp
+  dir_data_raw: inst/extdata
+  dir_output: _output
