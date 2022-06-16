@@ -1,0 +1,73 @@
+# MIMOSA 2
+
+## README
+
+We run the code in the `README` at `RGLab/MIMOSA2` on GitHub`.
+
+```{r }
+library(MIMOSA2)
+library(data.table)
+library(ggplot2)
+```
+
+```{r }
+set.seed(100)
+s <- simulate_MIMOSA2(effect = 2e-4, baseline_stim_effect = 5e-5, baseline_background = 2e-5, bg_effect = 2e-5, phi = c(50000, 50000, 50000, 50000), P = 100, rng = c(120000, 150000))
+```
+
+The code below breaks, however:
+```{r , error = TRUE}
+fit <- with(s, MIMOSA2(Ntot = Ntot, ns1 = ns1, nu1 = nu1, ns0 = ns0, nu0 = nu0, tol = 1e-5))
+```
+
+## MIMOSA2 example
+
+```{r }
+s = simulate_MIMOSA2();
+R = MIMOSA2(Ntot=s$Ntot, ns1 = s$ns1, nu1 = s$nu1, nu0 = s$nu0, ns0 = s$ns0,maxit=10)
+```
+
+## Alternate dataset
+
+```{r }
+library(tibble)
+renv::install("SATVILab/DataTidyACSCyTOFCytokinesTCells")
+load("cd4_th1_il17", "DataTidyACSCyTOFCytokinesTCells")
+data_tidy_cd4_th1_il17 <- DataTidyACSCyTOFCytokinesTCells::cd4_th1_il17
+count_tbl <- data_tidy_cd4_th1_il17$stats_combn_tbl
+```
+
+```{r }
+n_tot <- data.frame(
+  nu1 = rep(1e2, 20),
+  nu0 = rep(1e2, 20),
+  ns1 = rep(1e2, 20),
+  ns0 = rep(1e2, 20)
+) |>
+  as.matrix()
+ns1 <- rnorm(20, 20)
+ns0 <- rnorm(10, 20)
+nu1 <- rnorm(5, 20)
+nu0 <- rnorm(5, 20)
+MIMOSA2::MIMOSA2(
+  Ntot = n_tot,
+  ns1 = ns1,
+  ns0 = ns0,
+  nu1 = nu1,
+  nu0 = nu0,
+  tol = 1e-1
+)
+```
+
+## Debugging MIMOSA2
+
+
+```{r , eval = FALSE}
+debugonce(MIMOSA2:::initialize)
+fit <- with(s, MIMOSA2(Ntot = Ntot, ns1 = ns1, nu1 = nu1, ns0 = ns0, nu0 = nu0, tol = 1e-5))
+est <- optimx(
+  par = thetahat, fn = sumcll, method = "bobyqa",
+  pi_est = pi_est, z = inds, Ntot = Ntot, ns1 = ns1, nu1 = nu1,
+  ns0 = ns0, nu0 = nu0
+)
+```
