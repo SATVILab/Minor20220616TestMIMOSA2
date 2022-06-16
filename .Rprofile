@@ -1,3 +1,4 @@
+source("renv/activate.R")
 # set GITHUB_PAT environment variable for installing
 # from private repositories
 if (!nzchar(Sys.getenv("GITHUB_PAT"))) {

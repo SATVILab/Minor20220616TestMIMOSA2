@@ -1,3 +1,5 @@
+^renv$
+^renv\.lock$
 ^templater\.Rproj$
 ^\.Rproj\.user$
 ^_tmp
