@@ -5,5 +5,6 @@ language:
     chapter_name: 'Chapter '
 rmd_files: 
 - index.Rmd
+- rmd/mimosa2.Rmd
 - rmd/appendix.Rmd
 output_dir: docs/Minor20220616TestMIMOSA2
