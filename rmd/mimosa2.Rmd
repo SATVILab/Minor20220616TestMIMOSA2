@@ -10,7 +10,7 @@ library(data.table)
 library(ggplot2)
 ```
 
-```{r }
+```{r , error = TRUE}
 set.seed(100)
 s <- simulate_MIMOSA2(effect = 2e-4, baseline_stim_effect = 5e-5, baseline_background = 2e-5, bg_effect = 2e-5, phi = c(50000, 50000, 50000, 50000), P = 100, rng = c(120000, 150000))
 ```
@@ -22,22 +22,14 @@ fit <- with(s, MIMOSA2(Ntot = Ntot, ns1 = ns1, nu1 = nu1, ns0 = ns0, nu0 = nu0, 
 
 ## MIMOSA2 example
 
-```{r }
+```{r , error = TRUE}
 s = simulate_MIMOSA2();
 R = MIMOSA2(Ntot=s$Ntot, ns1 = s$ns1, nu1 = s$nu1, nu0 = s$nu0, ns0 = s$ns0,maxit=10)
 ```
 
 ## Alternate dataset
 
-```{r }
-library(tibble)
-renv::install("SATVILab/DataTidyACSCyTOFCytokinesTCells")
-load("cd4_th1_il17", "DataTidyACSCyTOFCytokinesTCells")
-data_tidy_cd4_th1_il17 <- DataTidyACSCyTOFCytokinesTCells::cd4_th1_il17
-count_tbl <- data_tidy_cd4_th1_il17$stats_combn_tbl
-```
-
-```{r }
+```{r , error = TRUE}
 n_tot <- data.frame(
   nu1 = rep(1e2, 20),
   nu0 = rep(1e2, 20),
