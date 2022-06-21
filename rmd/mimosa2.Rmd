@@ -13,7 +13,106 @@ library(ggplot2)
 ```{r , error = TRUE}
 set.seed(100)
 s <- simulate_MIMOSA2(effect = 2e-4, baseline_stim_effect = 5e-5, baseline_background = 2e-5, bg_effect = 2e-5, phi = c(50000, 50000, 50000, 50000), P = 100, rng = c(120000, 150000))
+pos_mat <- matrix(c(s$ns0, s$ns1, s$nu0, s$nu1), ncol = 4, byrow = FALSE)
+tot_mat <- s$Ntot
+freq_tbl <- (pos_mat / tot_mat * 1e2) |>
+  as.data.frame()
+cat_tbl <- tibble::tibble(truth = s$truth)
+cat_tbl <- cat_tbl |>
+  dplyr::mutate(
+    responder_type = gsub("\\d", "", truth),
+    responder_level = gsub("[a-zA-Z]", "", truth)
+  )
+sim_tbl <- cat_tbl |>
+  dplyr::mutate(pid = as.character(1:100)) |>
+  dplyr::bind_cols(freq_tbl) |>
+  tidyr::pivot_longer(
+    nu1:ns0,
+    names_to = "stim_timepoint",
+    values_to = "freq"
+  ) |>
+  dplyr::mutate(
+    stim = ifelse(grepl("s", stim_timepoint), "stim", "uns"),
+    timepoint = ifelse(grepl("0$", stim_timepoint), "pre", "post")
+  ) |>
+  dplyr::select(-stim_timepoint) |>
+  dplyr::select(-truth) |>
+  dplyr::select(pid, responder_type, responder_level, timepoint, stim, freq) |>
+  dplyr::mutate(
+    responder_level = ifelse(
+      responder_level == "", "1", responder_level
+      )
+  )
+sim_tbl_bs <- sim_tbl |>
+  dplyr::group_by(
+    pid, responder_type, responder_level, timepoint
+  ) |>
+  UtilsCytoRSV::subtract_background(
+    grp = c("pid", "responder_type", "responder_level", "timepoint"),
+    stim = "stim",
+    resp = "freq",
+    uns = "uns"
+  ) |>
+  dplyr::select(-stim) 
+ggplot(
+  sim_tbl_bs,
+  aes(
+    x = timepoint,
+    y = freq,
+    col = responder_level
+  )
+) +
+  geom_hline(yintercept = 0) +
+  cowplot::theme_cowplot() +
+  cowplot::background_grid(major = "y") +
+  geom_boxplot(outlier.size = -1) +
+  facet_wrap(~responder_type) +
+  labs(x = "Timepoint", y = "Background-subtracted frequency")
+
+ggplot(
+  sim_tbl|>
+    dplyr::mutate(
+      timepoint_stim = paste0(timepoint, "_", stim)
+    ),
+  aes(
+    x = timepoint_stim,
+    y = freq,
+    col = responder_level
+  )
+)  +
+  geom_hline(yintercept = 0) +
+  cowplot::theme_cowplot() +
+  cowplot::background_grid(major = "y") +
+  geom_boxplot(outlier.size = -1) +
+  facet_wrap(~responder_type) +
+  labs(x = "Timepoint", y = "Frequency")
 ```
+
+- Meaning of output from `s`
+  - `Ntot`
+    - Total T cell counts for stim or uns (`s` or `u`) at the first or second timepoint (`0` or `1`).
+  - `ns0`, `ns1`
+    - Positive cell counts in stimulated samples at the first (`ns0`) and second (`ns1`) timepoints
+  - `nu0`, `nu1`
+    - Positive cell counts in unstimulated samples at the first (`nu0`) and second (`nu1`) timepoints
+  - `truth`
+    - character vector, with one value per participant.
+    - Possible values: `"R1"  "R2"  "R3"  "R4"  "NR1" "NR2" "NR3" "NSR"`
+      - `R[1-4]`
+      - `NR[1-3]`
+      - `NSR`
+      - Not clear what `NSR` is.
+    - These must classify participants, so whether the participant is a responsender or not.
+    - In the `README`, we see that `R` is a response (stim > uns), `NR` is a non-responder (stim == uns) and NSR is a non-responder but has high background (non-specific response: stim == uns >> 0).
+      - That's not quite true, if you look at the simulated data.
+        - It seems that `R` is someone who responded to the vaccine, so there is a response and it is larger at time 2 than time 1 in the stim but not the unstim.
+        - `NR` is someone who did not respond to the vaccine and does not respond in general to the antigen. 
+        - `NSR` is someone who responded to the antigen but not because of the vaccine. 
+    - Looking at the plot of background-subtracted frequencies:
+      - `NR` all don't have higher stims post vacc than unstims post vacc
+      - `R` all respond, in varying manners (e.g. R3 also increases unstim a lot post-vaccination)
+    - Looking at the plot of frequncies:
+     - `NSR` have a non-specific increase in the positive count between pre- and post
 
 The code below breaks, however:
 ```{r , error = TRUE}
