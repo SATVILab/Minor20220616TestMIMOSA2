@@ -11,5 +11,16 @@ description: "Get MIMOSA2 up and running"
 # Introduction
   
 ```{r , include = FALSE}
-
+dir_vec <- yaml::read_yaml("_project.yml")$directories
+for (i in seq_along(dir_vec)) {
+  assign(
+    names(dir_vec)[i],
+    dir_vec[[i]],
+    envir = .GlobalEnv
+  )
+  if (!dir.exists(dir_vec[[i]])) {
+    dir.create(dir_vec[[i]], recursive = TRUE)
+  }
+}
+rm("dir_vec")
 ```

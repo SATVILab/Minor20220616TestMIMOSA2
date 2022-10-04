@@ -53,7 +53,7 @@ sim_tbl_bs <- sim_tbl |>
     resp = "freq",
     uns = "uns"
   ) |>
-  dplyr::select(-stim) 
+  dplyr::select(-stim)
 ggplot(
   sim_tbl_bs,
   aes(
